@@ -65,16 +65,33 @@ int main(int argc, char *argv[])
 	printf("Established connected UDP socket.\n");
 
 	const char *message = "It works!";
+	char buffer[BUFFER_SIZE] = "\0";
 	for (;;)
 	{
-		sendto
+		send
 		(
 			socket_file_descriptor,
-			message, strlen(message), MSG_CONFIRM,
-			(const struct sockaddr *) &server_address, sizeof(struct sockaddr)
+			message, strlen(message), MSG_CONFIRM
 		);
 		printf("Sent message '%s'\n", message);
-		sleep(DELAY_BETWEEN_MESSAGES);
+
+		ssize_t received_bytes = 0;
+		do
+		{
+			received_bytes = recv
+			(
+				socket_file_descriptor,
+				(char *) buffer, strlen(message), MSG_WAITALL
+			);
+			if (received_bytes < BUFFER_SIZE)
+			{
+				buffer[received_bytes] = '\0';
+			}
+			else
+			{
+				buffer[BUFFER_SIZE - 1] = '\0';
+			}
+		} while (received_bytes <= 0);
 	}
 
 	close(socket_file_descriptor);
